@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.rivedila7" name="La7-La7d" version="4.0.0" provider-name="Luivit, Testato">
+<addon id="plugin.video.rivedila7" name="La7-La7d" version="4.0.1" provider-name="Luivit, Testato">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.requests"/>
@@ -11,10 +11,10 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary lang="en_GB">La7-La7d</summary>
-    <description lang="en_GB">Live Streaming La7, News and Weather, Replay the last week, Programs on-demand (italian television)</description>
-    <summary lang="it_IT">La7-La7d</summary>
-    <description lang="it_IT">Diretta Live La7, Telegiornali e Meteo, Rivedi ultima settimana, Programmi on-demand</description>
+    <summary lang="en_GB">LA7-LA7d</summary>
+    <description lang="en_GB">Live Streaming, Replay the last week, On-Demand programs, News and Weather, Teche LA7 - The Protagonists</description>
+    <summary lang="it_IT">LA7-LA7d</summary>
+    <description lang="it_IT">Diretta Live, Rivedi ultima settimana, Programmi On-Demand, Telegiornali e Meteo, Teche LA7 - I Protagonisti</description>
     <language>it</language>
     <platform>all</platform>
     <license>GNU General Public License v3.0</license>
@@ -26,10 +26,9 @@
         <icon>resources/icon.png</icon>
 		<fanart>resources/fanart.jpg</fanart>
     </assets>
-    <news>4.0.0 (2020-02-01) - Brexit Edition
-- Fixed LA7 Live (thanks @mbebe for Widevine DRM)
-- Added LA7d Live
-- Use of InputstreamHelper for Inputstream Adaptive and Widevine management
+    <news>4.0.1 (2020-02-01)
+- Fix Fanart
+- Change Headers
 </news>
   </extension>
 </addon>

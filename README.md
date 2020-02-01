@@ -1,8 +1,12 @@
 # La7-La7d Kodi plugin
-Live Streaming La7, News and Weather, Replay the last week, Programs on-demand (italian television)
+Live Streaming, Replay the last week, On-Demand programs, News and Weather, Teche LA7 - The Protagonists (italian language)
 
 
 ### Changelog
+4.0.1 (2020-02-01)
+- Fix Fanart
+- Change Headers
+
 4.0.0 (2020-02-01) - Brexit Edition
 - Fixed LA7 Live (thanks @mbebe for Widevine DRM)
 - Added LA7d Live

@@ -30,7 +30,17 @@ url_programmila7d = "https://www.la7.it/programmi-la7d"
 url_tutti_programmi = "https://www.la7.it/tutti-i-programmi"
 url_teche_la7 = "https://www.la7.it/i-protagonisti"
 key_widevine = "https://la7.prod.conax.cloud/widevine/license"
-UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36"
+headers_set = {
+    'host_token': 'pat.la7.it',
+    'host_license': 'la7.prod.conax.cloud',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36',
+    'accept': '*/*',
+    'accept-language': 'en,en-US;q=0.9,it;q=0.8',
+    'dnt': '1',
+    'te': 'trailers',
+    'origin': 'https://www.la7.it',
+    'referer': 'https://www.la7.it/',
+}
 titolo_global = ''
 thumb_global = ''
 plot_global = ''
@@ -41,8 +51,9 @@ tg_cronache = False
 filtro_cronache = 'TG LA7 Cronache'
 omnibus_news = False
 filtro_omnibus = 'Omnibus News'
+fanart_path = os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'fanart.jpg')
 thumb_path = os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'resources', 'images')
-fanart_path = os.path.join(xbmcaddon.Addon().getAddonInfo('path'), 'fanart.jpg')
+
 
 
 def parameters_string_to_dict(parameters):
@@ -91,49 +102,52 @@ def addDirectoryItem_nodup(parameters, li, title=titolo_global, folder=True):
 
 
 def play_dirette(url):
-	response = requests.get(url, headers={'User-Agent': UserAgent},verify=False).content
-	preulr = re.findall('preTokenUrl = "(.+?)"',response)[0]
-	response=response.replace("\'",'"')
-	mpdurl=re.findall('dash.+?"(.+?)"',response,re.DOTALL)[0]
-	headersy = {
-		'Host': 'pat.la7.it',
-		'user-agent': UserAgent,
-		'accept': '*/*',
-		'accept-language': 'pl,en-US;q=0.7,en;q=0.3',
-		'origin': 'https://www.la7.it',
-		'dnt': '1',
-		'referer': 'https://www.la7.it/',
-		'te': 'trailers',
-	}
-	response = requests.get(preulr, headers=headersy,verify=False).json()
-	preAuthToken=response['preAuthToken']
-	
-	headersx = {
-        'Host': 'la7.prod.conax.cloud',
-        'user-agent': UserAgent,
-        'Accept': '*/*',
-        'Accept-Language': 'pl,en-US;q=0.7,en;q=0.3',
-        'preAuthorization': preAuthToken,
-        'Origin': 'https://www.la7.it',
-        'Referer': 'https://www.la7.it',
+    #xbmc.log('URL------: '+str(headers_set['User-Agent']),xbmc.LOGNOTICE)
+    response = requests.get(url, headers={'user-agent': headers_set['user-agent']},verify=False).content
+    preulr = re.findall('preTokenUrl = "(.+?)"',response)[0]
+    response=response.replace("\'",'"')
+    mpdurl=re.findall('dash.+?"(.+?)"',response,re.DOTALL)[0]
+    headersTok = {
+        'host': headers_set['host_token'],
+        'user-agent': headers_set['user-agent'],
+        'accept': headers_set['accept'],
+        'accept-language': headers_set['accept-language'],
+        'dnt': headers_set['dnt'],
+        'te': headers_set['te'],
+        'origin': headers_set['origin'],
+        'referer': headers_set['referer'],
     }
-	ll= '&'.join(['%s=%s' % (name, value) for (name, value) in headersx.items()])	
+    response = requests.get(preulr, headers=headersTok,verify=False).json()
+    preAuthToken=response['preAuthToken']
+    
+    headersLic = {
+        'host': headers_set['host_license'],
+        'user-agent': headers_set['user-agent'],
+        'accept': headers_set['accept'],
+        'accept-language': headers_set['accept-language'],
+        'preAuthorization': preAuthToken,
+        'origin': headers_set['origin'],
+        'referer': headers_set['referer'],
+    }
+    preLic= '&'.join(['%s=%s' % (name, value) for (name, value) in headersLic.items()])
+    #xbmc.log('LICENSE1------: '+str(preLic),xbmc.LOGNOTICE)
 
-	PROTOCOL = 'mpd'
-	import time
-	tsatmp=str(int(time.time()))
-	license_url= key_widevine + '?d=%s'%tsatmp
-	lic_url='%s|%s|R{SSM}|'%(license_url,ll)
-	DRM = 'com.widevine.alpha'
-	is_helper = inputstreamhelper.Helper(PROTOCOL, drm=DRM)
-	if is_helper.check_inputstream():
-		newItem = xbmcgui.ListItem(path=mpdurl) 
-		newItem.setProperty("inputstreamaddon", is_helper.inputstream_addon)
-		newItem.setProperty("inputstream.adaptive.manifest_type", PROTOCOL)
-		newItem.setProperty("inputstream.adaptive.license_type", DRM)
-		newItem.setProperty("inputstream.adaptive.license_key", lic_url)
-		newItem.setMimeType('application/dash+xml')
-	xbmcplugin.setResolvedUrl(handle, True, listitem=newItem)  
+    PROTOCOL = 'mpd'
+    import time
+    tsatmp=str(int(time.time()))
+    license_url= key_widevine + '?d=%s'%tsatmp
+    lic_url='%s|%s|R{SSM}|'%(license_url,preLic)
+    #xbmc.log('LICENSE2------: '+str(lic_url),xbmc.LOGNOTICE)
+    DRM = 'com.widevine.alpha'
+    is_helper = inputstreamhelper.Helper(PROTOCOL, drm=DRM)
+    if is_helper.check_inputstream():
+        newItem = xbmcgui.ListItem(path=mpdurl) 
+        newItem.setProperty("inputstreamaddon", is_helper.inputstream_addon)
+        newItem.setProperty("inputstream.adaptive.manifest_type", PROTOCOL)
+        newItem.setProperty("inputstream.adaptive.license_type", DRM)
+        newItem.setProperty("inputstream.adaptive.license_key", lic_url)
+        newItem.setMimeType('application/dash+xml')
+    xbmcplugin.setResolvedUrl(handle, True, listitem=newItem)  
 
 
 
@@ -144,7 +158,7 @@ def play_video(video,live):
     regex3 = 'm3u8: "(.*?)"'
     regex4 = '  <iframe src="(.*?)"'
 
-    req = urllib2.Request(video,headers={'User-Agent': UserAgent})
+    req = urllib2.Request(video,headers={'user-agent': headers_set['user-agent']})
     page=urllib2.urlopen(req)
     html=page.read()
     if live:
@@ -162,7 +176,7 @@ def play_video(video,live):
         elif re.findall(regex4, html):
             #xbmc.log('REGEX4-----: '+str(re.findall(regex4, html)),xbmc.LOGNOTICE)
             iframe = re.findall(regex4, html)[0]
-            req2 = urllib2.Request(iframe,headers={'User-Agent': UserAgent})
+            req2 = urllib2.Request(iframe,headers={'user-agent': headers_set['user-agent']})
             page2=urllib2.urlopen(req2)
             html2=page2.read()
             if re.findall(regex2, html2):
@@ -186,7 +200,7 @@ def play_video(video,live):
 
 
 def rivedi(url, thumb):
-    req = urllib2.Request(url,headers={'User-Agent': UserAgent}) 
+    req = urllib2.Request(url,headers={'user-agent': headers_set['user-agent']})
     page=urllib2.urlopen(req)
     html=BeautifulSoup(page,'html5lib')
     giorno=html.find('div',class_='block block-system').find_all('div',class_=['item item--menu-guida-tv ','item item--menu-guida-tv active '])
@@ -204,7 +218,7 @@ def rivedi(url, thumb):
 
 
 def rivedi_giorno():
-    req = urllib2.Request(url_base+giorno,headers={'User-Agent': UserAgent}) 
+    req = urllib2.Request(url_base+giorno,headers={'user-agent': headers_set['user-agent']})
     page=urllib2.urlopen(req)
     html=BeautifulSoup(page,'html5lib')
     guida_tv=html.find(id="content_guida_tv_rivedi").find_all('div',class_='item item--guida-tv')
@@ -229,16 +243,16 @@ def rivedi_giorno():
 
 
 def programmi_lettera():
-    req_p = urllib2.Request(url_programmi,headers={'User-Agent': UserAgent}) 
+    req_p = urllib2.Request(url_programmi,headers={'user-agent': headers_set['user-agent']})
     page_p=urllib2.urlopen(req_p)
     html_p=BeautifulSoup(page_p,'html5lib') 
     programmi=html_p.find(id='container-programmi-list').find_all('div',class_='list-item')
     #xbmc.log('PROGRAMMI----------: '+str(programmi),xbmc.LOGNOTICE)
-    req_pd = urllib2.Request(url_programmila7d,headers={'User-Agent': UserAgent}) 
+    req_pd = urllib2.Request(url_programmila7d,headers={'user-agent': headers_set['user-agent']})
     page_pd=urllib2.urlopen(req_pd)
     html_pd=BeautifulSoup(page_pd,'html5lib') 
     programmila7d=html_pd.find(id='container-programmi-list').find_all('div',class_='list-item')
-    req_tp = urllib2.Request(url_tutti_programmi,headers={'User-Agent': UserAgent}) 
+    req_tp = urllib2.Request(url_tutti_programmi,headers={'user-agent': headers_set['user-agent']})
     page_tp=urllib2.urlopen(req_tp)
     html_tp=BeautifulSoup(page_tp,'html5lib') 
     tutti_programmi=html_tp.find_all('div',class_='list-item')
@@ -353,7 +367,7 @@ def programmi_lettera():
 
 
 def programmi_lettera_teche_la7():
-    req_teche = urllib2.Request(url_teche_la7,headers={'User-Agent': UserAgent}) 
+    req_teche = urllib2.Request(url_teche_la7,headers={'user-agent': headers_set['user-agent']})
     page_teche=urllib2.urlopen(req_teche)
     html_teche=BeautifulSoup(page_teche,'html5lib') 
     teche_la7=html_teche.find_all('div',class_='list-item')
@@ -446,7 +460,7 @@ def video_programma():
         link_global = url_base+'/omnibus'
     
     if link_global != url_tgla7d:
-        req = urllib2.Request(link_global+"/rivedila7",headers={'User-Agent': UserAgent})
+        req = urllib2.Request(link_global+"/rivedila7",headers={'user-agent': headers_set['user-agent']})
         try:
             page=urllib2.urlopen(req)
         except Exception as e:
@@ -493,9 +507,9 @@ def video_programma():
         # CULT VIDEO
         if html.findAll(text="Puntate Cult"):
             if link_global == url_base+'/chi-sceglie-la-seconda-casa':
-                req2 = urllib2.Request(link_global+"/rivedila7",headers={'User-Agent': UserAgent})
+                req2 = urllib2.Request(link_global+"/rivedila7",headers={'user-agent': headers_set['user-agent']})
             else:
-                req2 = urllib2.Request(link_global+"/rivedila7/archivio?page="+str(pagenum),headers={'User-Agent': UserAgent})
+                req2 = urllib2.Request(link_global+"/rivedila7/archivio?page="+str(pagenum),headers={'user-agent': headers_set['user-agent']})
             page2 = urllib2.urlopen(req2)
             html2 = BeautifulSoup(page2,'html5lib')
             video_archivio = html2.find('div',class_='view-content clearfix').find_all('div',class_='views-row')
@@ -507,7 +521,7 @@ def video_programma():
                     pagenext(page)
     #Tg La7d
     else:
-        req = urllib2.Request(link_global+"?page="+str(pagenum),headers={'User-Agent': UserAgent})
+        req = urllib2.Request(link_global+"?page="+str(pagenum),headers={'user-agent': headers_set['user-agent']})
         page = urllib2.urlopen(req)
         html=BeautifulSoup(page,'html5lib')
         video_tgla7d = html.find('div',class_='tgla7-category').find_all('article',class_='tgla7-new clearfix')
@@ -524,7 +538,7 @@ def video_programma_teche_la7():
     global link_global
 
     #xbmc.log('LINK------: '+str(link_global),xbmc.LOGNOTICE)
-    req = urllib2.Request(link_global+"?page="+str(pagenum),headers={'User-Agent': UserAgent})
+    req = urllib2.Request(link_global+"?page="+str(pagenum),headers={'user-agent': headers_set['user-agent']})
     page = urllib2.urlopen(req)
     html=BeautifulSoup(page,'html5lib')
     
@@ -655,7 +669,7 @@ def video_programma_landpage():
     global link_global
     
     #xbmc.log('LINK GLOBAL------: '+str(link_global),xbmc.LOGNOTICE)
-    req = urllib2.Request(link_global,headers={'User-Agent': UserAgent})
+    req = urllib2.Request(link_global,headers={'user-agent': headers_set['user-agent']})
     page = urllib2.urlopen(req)
     html=BeautifulSoup(page,'html5lib')
     
