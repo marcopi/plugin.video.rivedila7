@@ -3,6 +3,10 @@ Live Streaming, Replay the last week, On-Demand programs, News and Weather, Tech
 
 
 ### Changelog
+4.1.0 (2020-02-02) - Palindrome Edition
+- Enabled the decryption of DRM videos in Replay section
+- Fixed error message during Inputstream activation
+
 4.0.1 (2020-02-01)
 - Fix Fanart
 - Change Headers

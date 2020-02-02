@@ -10,6 +10,7 @@ import urllib
 import urllib2
 import urlparse
 import html5lib
+import time
 import requests
 import inputstreamhelper
 from bs4 import BeautifulSoup
@@ -29,6 +30,9 @@ url_programmi = "https://www.la7.it/programmi"
 url_programmila7d = "https://www.la7.it/programmi-la7d"
 url_tutti_programmi = "https://www.la7.it/tutti-i-programmi"
 url_teche_la7 = "https://www.la7.it/i-protagonisti"
+#DRM
+PROTOCOL = 'mpd'
+DRM = 'com.widevine.alpha'
 key_widevine = "https://la7.prod.conax.cloud/widevine/license"
 headers_set = {
     'host_token': 'pat.la7.it',
@@ -102,7 +106,6 @@ def addDirectoryItem_nodup(parameters, li, title=titolo_global, folder=True):
 
 
 def play_dirette(url):
-    #xbmc.log('URL------: '+str(headers_set['User-Agent']),xbmc.LOGNOTICE)
     response = requests.get(url, headers={'user-agent': headers_set['user-agent']},verify=False).content
     preulr = re.findall('preTokenUrl = "(.+?)"',response)[0]
     response=response.replace("\'",'"')
@@ -132,13 +135,10 @@ def play_dirette(url):
     preLic= '&'.join(['%s=%s' % (name, value) for (name, value) in headersLic.items()])
     #xbmc.log('LICENSE1------: '+str(preLic),xbmc.LOGNOTICE)
 
-    PROTOCOL = 'mpd'
-    import time
     tsatmp=str(int(time.time()))
     license_url= key_widevine + '?d=%s'%tsatmp
     lic_url='%s|%s|R{SSM}|'%(license_url,preLic)
     #xbmc.log('LICENSE2------: '+str(lic_url),xbmc.LOGNOTICE)
-    DRM = 'com.widevine.alpha'
     is_helper = inputstreamhelper.Helper(PROTOCOL, drm=DRM)
     if is_helper.check_inputstream():
         newItem = xbmcgui.ListItem(path=mpdurl) 
@@ -147,23 +147,24 @@ def play_dirette(url):
         newItem.setProperty("inputstream.adaptive.license_type", DRM)
         newItem.setProperty("inputstream.adaptive.license_key", lic_url)
         newItem.setMimeType('application/dash+xml')
-    xbmcplugin.setResolvedUrl(handle, True, listitem=newItem)  
+        xbmcplugin.setResolvedUrl(handle, True, listitem=newItem)  
 
 
 
-def play_video(video,live):
+def play_video(page_video,live):
+    #xbmc.log('PAGE VIDEO-----: '+str(page_video),xbmc.LOGNOTICE)
     link_video = ''
-    regex1 = 'vS = "(.*?)"'
+    # regex1 = 'vS = "(.*?)"'
     regex2 = '/content/(.*?).mp4'
     regex3 = 'm3u8: "(.*?)"'
-    regex4 = '  <iframe src="(.*?)"'
+    #regex4 = '  <iframe src="(.*?)"'
 
-    req = urllib2.Request(video,headers={'user-agent': headers_set['user-agent']})
+    req = urllib2.Request(page_video,headers={'user-agent': headers_set['user-agent']})
     page=urllib2.urlopen(req)
     html=page.read()
     if live:
         if re.findall(regex1, html):
-            #xbmc.log('REGEX1-----: '+str(re.findall(regex1, html)),xbmc.LOGNOTICE)
+            # xbmc.log('REGEX1-----: '+str(re.findall(regex1, html)),xbmc.LOGNOTICE)
             link_video = re.findall(regex1, html)[0]
     else:
         if re.findall(regex2, html):
@@ -173,15 +174,18 @@ def play_video(video,live):
         elif re.findall(regex3, html):
             #xbmc.log('REGEX3-----: '+str(re.findall(regex3, html)),xbmc.LOGNOTICE)
             link_video = re.findall(regex3, html)[0]
-        elif re.findall(regex4, html):
-            #xbmc.log('REGEX4-----: '+str(re.findall(regex4, html)),xbmc.LOGNOTICE)
-            iframe = re.findall(regex4, html)[0]
-            req2 = urllib2.Request(iframe,headers={'user-agent': headers_set['user-agent']})
-            page2=urllib2.urlopen(req2)
-            html2=page2.read()
-            if re.findall(regex2, html2):
-                #xbmc.log('REGEX2-B---: '+str(re.findall(regex2, html)),xbmc.LOGNOTICE)
-                link_video = str("https:")+re.findall(regex2, html2)[0]
+        else:
+            play_dirette(page_video)
+            exit()
+        # elif re.findall(regex4, html):
+        #     #xbmc.log('REGEX4-----: '+str(re.findall(regex4, html)),xbmc.LOGNOTICE)
+        #     iframe = re.findall(regex4, html)[0]
+        #     req2 = urllib2.Request(iframe,headers={'user-agent': headers_set['user-agent']})
+        #     page2=urllib2.urlopen(req2)
+        #     html2=page2.read()
+        #     if re.findall(regex2, html2):
+        #         #xbmc.log('REGEX2-B---: '+str(re.findall(regex2, html)),xbmc.LOGNOTICE)
+        #         link_video = str("https:")+re.findall(regex2, html2)[0]
 
     listitem =xbmcgui.ListItem(titolo_global)
     listitem.setInfo('video', {'Title': titolo_global})
