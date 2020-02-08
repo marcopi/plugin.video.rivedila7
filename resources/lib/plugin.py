@@ -271,6 +271,12 @@ def programmi_lettera():
                 if url_trovato !='/meteola7' and url_trovato !='/tgla7':
                     if url_trovato == '/facciaafaccia':
                         url_trovato='/faccia-a-faccia'
+                    if url_trovato == '/il-boss-dei-comici':
+                        url_trovato='/boss-dei-comici'
+                    if url_trovato == '/lariadestate':
+                        url_trovato='/laria-destate'
+                    if url_trovato == '/taga-doc':
+                        url_trovato='/tagada-doc'
                     link=url_base+url_trovato
                     #xbmc.log('LINK-----: '+str(link),xbmc.LOGNOTICE)
                     if(len(dati)>0):
@@ -298,6 +304,12 @@ def programmi_lettera():
                 if url_trovato !='/meteola7' and url_trovato !='/tgla7':
                     if url_trovato == '/facciaafaccia':
                         url_trovato='/faccia-a-faccia'
+                    if url_trovato == '/il-boss-dei-comici':
+                        url_trovato='/boss-dei-comici'
+                    if url_trovato == '/lariadestate':
+                        url_trovato='/laria-destate'
+                    if url_trovato == '/taga-doc':
+                        url_trovato='/tagada-doc'
                     link=url_base+url_trovato
                     #xbmc.log('LINK-----: '+str(link),xbmc.LOGNOTICE)
                     if(len(dati)>0):
@@ -323,9 +335,16 @@ def programmi_lettera():
                 #xbmc.log('TITLE2: '+str(titolo),xbmc.LOGNOTICE)
                 liStyle = xbmcgui.ListItem(titolo)
                 url_trovato=dati.a.get('href').strip()
+                #xbmc.log('URL TROVATO-----: '+str(url_trovato),xbmc.LOGNOTICE)
                 if url_trovato !='/meteola7' and url_trovato !='/tgla7':
                     if url_trovato == '/facciaafaccia':
                         url_trovato='/faccia-a-faccia'
+                    if url_trovato == '/il-boss-dei-comici':
+                        url_trovato='/boss-dei-comici'
+                    if url_trovato == '/lariadestate':
+                        url_trovato='/laria-destate'
+                    if url_trovato == '/taga-doc':
+                        url_trovato='/tagada-doc'
                     link=url_base+url_trovato
                     #xbmc.log('LINK-----: '+str(link),xbmc.LOGNOTICE)
                     if(len(dati)>0):
@@ -452,7 +471,7 @@ def video_programma():
     global omnibus_news
 
     #xbmc.log('LINK GLOBAL----: '+str(link_global),xbmc.LOGNOTICE)
-    if link_global == url_base+'/atlantide':
+    if link_global == url_base+'/atlantide' or link_global == url_base+'/atlantidefiles' or link_global == url_base+'/film-e-fiction' or link_global == url_base+'/giardinieri-in-affitto' or link_global == url_base+'/hawthorne' or link_global == url_base+'/il-commissario-cordier' or link_global == url_base+'/indovina-cosa-sceglie-la-sposa' or link_global == url_base+'/italia-fashion-show' or link_global == url_base+'/josephineangegardien' or link_global == url_base+'/lunionefalaforza' or link_global == url_base+'/little-murders' or link_global == url_base+'/mister-nat' or link_global == url_base+'/professort' or link_global == url_base+'/sfera' or link_global == url_base+'/specialguest' or link_global == url_base+'/tagada-doc' or link_global == url_base+'/the-dr-oz-show':
         video_programma_landpage()
 
     if link_global == 'flag_tg_cronache':
@@ -498,11 +517,12 @@ def video_programma():
                 first_video(first, titolo, titolo.find(filtro_omnibus) == -1)
             else:
                 first_video(first, titolo, True)
-
+            #xbmc.log('FIRST VIDEO----: '+str(titolo),xbmc.LOGNOTICE)
 
             # WEEK VIDEO
-            if html.findAll(text=" LA SETTIMANA "):
+            if html.findAll(text=" LA SETTIMANA"):
                 video_settimana = html.find('div',class_='home-block__content-carousel container-vetrina').find_all('div',class_='item')
+                #xbmc.log('LA SETTIMANA----: '+str(video_settimana),xbmc.LOGNOTICE)
                 if video_settimana:
                     get_rows_video(video_settimana)
             else:
@@ -566,7 +586,12 @@ def video_programma_teche_la7():
 
 def first_video(first, titolo, filtro):
     if filtro:
-        thumb='https:'+first.find('div',class_='holder-bg lozad').get('data-background-image')
+        thumblink=first.find('div',class_='holder-bg lozad').get('data-background-image')
+        if thumblink.startswith('//'):
+            thumb='https:'+thumblink
+        else:
+            thumb=thumblink
+        #xbmc.log('THUMB 1------: '+str(thumb),xbmc.LOGNOTICE)
         data='[I] - ('+first.find('div',class_='scritta_ultima').text.encode('utf-8').strip()+')[/I]'
         try:
             plot=first.find('div',class_='occhiello').text.encode('utf-8').strip()
@@ -583,7 +608,12 @@ def first_video(first, titolo, filtro):
 
 def video_list(div, titolo, filtro):
     if filtro:
-        thumb='https:'+div.find('div',class_='bg-img lozad').get('data-background-image')
+        thumblink=div.find('div',class_='bg-img lozad').get('data-background-image')
+        if thumblink.startswith('//'):
+            thumb='https:'+thumblink
+        else:
+            thumb=thumblink
+        #xbmc.log('THUMB 2------: '+str(thumb),xbmc.LOGNOTICE)
         #subdata=div.find('a').get('href').encode('utf-8')
         #data='[I] - ('+subdata[24:34]+')[/I]'
         try:
@@ -671,7 +701,6 @@ def get_rows_video_techela7(video):
 
 def video_programma_landpage():
     global link_global
-    
     #xbmc.log('LINK GLOBAL------: '+str(link_global),xbmc.LOGNOTICE)
     req = urllib2.Request(link_global,headers={'user-agent': headers_set['user-agent']})
     page = urllib2.urlopen(req)
@@ -683,7 +712,7 @@ def video_programma_landpage():
         get_rows_video_landpage_preview(first_video)
 
     # PUNTATE    
-    if html.findAll(text="puntate "):
+    if html.findAll(text="puntate"):
         #xbmc.log('TEST------: '+str(html.find('div',class_='home-block__content-inner')),xbmc.LOGNOTICE)
         video_puntate_1r = html.find('div',class_='home-block__content-inner').select('div[class="item"]')
         video_puntate_2r = html.find('section',class_='home-block home-block--oggi-striscia home-block--fixed').find_all('div',class_='item')
@@ -701,7 +730,11 @@ def get_rows_video_landpage_preview(video):
     #xbmc.log('TEST-----: '+str(video),xbmc.LOGNOTICE)
     titolo = video.find('div',class_='title_puntata').text.encode('utf-8').strip()
     data='[I] - ('+video.find('div',class_='scritta_ultima').text.encode('utf-8').strip()+')[/I]'
-    thumb='https:'+video.find('div',class_='holder-bg lozad').get('data-background-image')
+    thumblink=video.find('div',class_='holder-bg lozad').get('data-background-image')
+    if thumblink.startswith('//'):
+        thumb='https:'+thumblink
+    else:
+        thumb=thumblink
     plot=video.find('div',class_='occhiello').text.encode('utf-8').strip()
     link=url_base+video.find('a').get('href')
     liStyle = xbmcgui.ListItem(titolo+data)
@@ -715,7 +748,11 @@ def get_rows_video_landpage(video):
         titolo=div.find('div',class_='title').text.encode('utf-8').strip()
         #xbmc.log('TITOLO-----: '+str(titolo),xbmc.LOGNOTICE)
         data='[I] - ('+div.find('div',class_='data').text.encode('utf-8').strip()+')[/I]'
-        thumb='https:'+div.find('div',class_='bg-img lozad').get('data-background-image')
+        thumblink=div.find('div',class_='bg-img lozad').get('data-background-image')
+        if thumblink.startswith('//'):
+            thumb='https:'+thumblink
+        else:
+            thumb=thumblink
         plot=""
         link=url_base+div.a.get('href').strip()
         liStyle = xbmcgui.ListItem(titolo+data)

@@ -3,6 +3,11 @@ Live Streaming, Replay the last week, On-Demand programs, News and Weather, Tech
 
 
 ### Changelog
+4.2.0 (2020-02-08)
+- Fixed Week video scraping for On-Demand
+- Fixed episodes thumbnail
+- Moved some program to Landpage scraping
+
 4.1.0 (2020-02-02) - Palindrome Edition
 - Enabled the decryption of DRM videos in Replay section
 - Fixed error message during Inputstream activation
