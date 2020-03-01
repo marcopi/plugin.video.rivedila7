@@ -21,6 +21,7 @@
     <forum>https://forum.kodi.tv/showthread.php?tid=331064</forum>
     <website>http://www.la7.it</website>
     <email>luivit39@gmail.com</email>
+    <broken>deprecated</broken>
     <source>https://github.com/luivit/plugin.video.rivedila7</source>
 	<assets>
         <icon>resources/icon.png</icon>
