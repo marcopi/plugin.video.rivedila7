@@ -21,6 +21,7 @@ addon = xbmcaddon.Addon()
 language = addon.getLocalizedString
 handle = int(sys.argv[1])
 url_base = "https://www.la7.it"
+url_base_la7d = "https://www.la7.it/la7d"
 url_live_la7 = "https://www.la7.it/dirette-tv"
 url_live_la7d = "https://www.la7.it/live-la7d"
 url_tgla7d = "https://tg.la7.it/listing/tgla7d"
@@ -105,7 +106,24 @@ def addDirectoryItem_nodup(parameters, li, title=titolo_global, folder=True):
         return xbmcplugin.addDirectoryItem(handle=handle, url=url, listitem=li, isFolder=folder)
 
 
-def play_dirette(url):
+def play_dirette(url,live):
+
+    if live:
+        regex5 = 'emissioneString =  "(.*?)"'
+
+        if url == url_live_la7:
+            url_title = url_base
+        elif url == url_live_la7d:
+            url_title = url_base_la7d
+        #xbmc.log('URL TITLE-----: '+str(url_title),xbmc.LOGNOTICE)
+        
+        req = urllib2.Request(url_title,headers={'user-agent': headers_set['user-agent']})
+        page=urllib2.urlopen(req)
+        html=page.read()
+        #xbmc.log('REGEX5-----: '+str(re.findall(regex5, html)),xbmc.LOGNOTICE)
+        titolo_diretta=re.findall(regex5, html)[0]
+        #xbmc.log('TITOLO DIRETTA-----: '+str(titolo_diretta),xbmc.LOGNOTICE)
+
     response = requests.get(url, headers={'user-agent': headers_set['user-agent']},verify=False).content
     preulr = re.findall('preTokenUrl = "(.+?)"',response)[0]
     response=response.replace("\'",'"')
@@ -141,20 +159,23 @@ def play_dirette(url):
     #xbmc.log('LICENSE2------: '+str(lic_url),xbmc.LOGNOTICE)
     is_helper = inputstreamhelper.Helper(PROTOCOL, drm=DRM)
     if is_helper.check_inputstream():
-        newItem = xbmcgui.ListItem(path=mpdurl) 
-        newItem.setProperty("inputstreamaddon", is_helper.inputstream_addon)
-        newItem.setProperty("inputstream.adaptive.manifest_type", PROTOCOL)
-        newItem.setProperty("inputstream.adaptive.license_type", DRM)
-        newItem.setProperty("inputstream.adaptive.license_key", lic_url)
-        newItem.setMimeType('application/dash+xml')
-        xbmcplugin.setResolvedUrl(handle, True, listitem=newItem)  
-
+        listitem = xbmcgui.ListItem()
+        listitem.setPath(mpdurl)
+        if live:
+            #listitem.setLabel(titolo_diretta)
+            listitem.setInfo('video', {'plot': titolo_diretta, 'title': titolo_diretta})
+        listitem.setProperty("inputstreamaddon", is_helper.inputstream_addon)
+        listitem.setProperty("inputstream.adaptive.manifest_type", PROTOCOL)
+        listitem.setProperty("inputstream.adaptive.license_type", DRM)
+        listitem.setProperty("inputstream.adaptive.license_key", lic_url)
+        listitem.setMimeType('application/dash+xml')
+        xbmcplugin.setResolvedUrl(handle, True, listitem)
 
 
 def play_video(page_video,live):
     #xbmc.log('PAGE VIDEO-----: '+str(page_video),xbmc.LOGNOTICE)
     link_video = ''
-    # regex1 = 'vS = "(.*?)"'
+    #regex1 = 'vS = "(.*?)"'
     regex2 = '/content/(.*?).mp4'
     regex3 = 'm3u8: "(.*?)"'
     #regex4 = '  <iframe src="(.*?)"'
@@ -175,7 +196,8 @@ def play_video(page_video,live):
             #xbmc.log('REGEX3-----: '+str(re.findall(regex3, html)),xbmc.LOGNOTICE)
             link_video = re.findall(regex3, html)[0]
         else:
-            play_dirette(page_video)
+            #xbmc.log('DECODIFICA DRM',xbmc.LOGNOTICE)
+            play_dirette(page_video, False)
             exit()
         # elif re.findall(regex4, html):
         #     #xbmc.log('REGEX4-----: '+str(re.findall(regex4, html)),xbmc.LOGNOTICE)
@@ -367,11 +389,11 @@ def programmi_lettera():
                 'url': '/la-mala-educaxxxion',
                 'img': 'https://kdam.iltrovatore.it/p/103/sp/10300/thumbnail/entry_id/0_j0z82ps2/version/100001/type/5/width/600/height/360/quality/100/name/0_j0z82ps2.jpg'
                 },           
-            'Ω Video non catalogati 1': {
+            'NON CLASSIFICATI': {
                 'url': '/non-classificati',
                 'img': '',
                 },
-            'Ω Video non catalogati 2': {
+            'FILM': {
                 'url': '/film',
                 'img': '',
                 },
@@ -787,13 +809,10 @@ else:
     pagenum=int(params.get("page", ""))
 
 if mode=="diretta_la7":
-    titolo_global=language(32002)
-    #play_video(url_live,True)    
-    play_dirette(url_live_la7)
+    play_dirette(url_live_la7,True)
 
-if mode=="diretta_la7d":
-    titolo_global=language(32009)    
-    play_dirette(url_live_la7d)
+if mode=="diretta_la7d":  
+    play_dirette(url_live_la7d,True)
 
 elif mode=="tg_meteo":
     if play=="":

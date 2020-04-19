@@ -3,6 +3,9 @@ Live Streaming, Replay the last week, On-Demand programs, News and Weather, Tech
 
 
 ### Changelog
+4.3.0 (2020-04-19)
+- Added the title of the program on LA7 Live and LA7d Live
+
 4.2.0 (2020-02-08)
 - Fixed Week video scraping for On-Demand
 - Fixed episodes thumbnail
