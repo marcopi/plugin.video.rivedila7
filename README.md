@@ -3,6 +3,9 @@ Live Streaming, Replay the last week, On-Demand programs, News and Weather, Tech
 
 
 ### Changelog
+4.3.1 (2020-05-22)
+- Addon screenshot added
+
 4.3.0 (2020-04-19)
 - Added the title of the program on LA7 Live and LA7d Live
 
