@@ -3,6 +3,10 @@ Live Streaming, Replay the last week, On-Demand programs, News and Weather, Tech
 
 
 ### Changelog
+4.4.0 (2020-05-24)
+- Added Landpage scraping on all on-demand programs
+- Separated on-demand programs episodes by Home-Settimana-Archivio
+
 4.3.1 (2020-05-22)
 - Addon screenshot added
 
